@@ -1,0 +1,75 @@
+---
+title: "SMART Weight Loss: Analytics for July 2020 Submission"
+author: |
+    |
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+geometry: margin=0.5in
+output: 
+  pdf_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy = TRUE)
+knitr::opts_chunk$set(fig.pos = 'H')
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+library(rmarkdown)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+```
+
+# ROC Curves for Classification Tree
+
+```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.height=4, fig.width=4}
+source("month-three.R")
+```
+
+\newpage
+
+# Can we identify App nonresponders during the first week of treatment?
+
+```{r, echo = FALSE}
+tbl_cart_only %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "CART Only") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+```{r, echo = FALSE}
+tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Overall Decision Rule") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+# Is response status at week 8 predictive of weight loss at month 3?
+
+```{r, echo = FALSE}
+tbl_mod %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',4),
+        col.names = c("Estimate", "Std. Error", "z value", "Pr(>|z|)"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Estimates of Parameters in a Logistic Regression Model") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
