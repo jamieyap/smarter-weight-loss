@@ -1,0 +1,204 @@
+---
+title: "SMART Weight Loss: Analytics for February 2021 Submission: Classifier Sanity Check"
+author: |
+    |
+date: '`r format(Sys.Date(), "%B %d, %Y")`'
+geometry: margin=0.7in
+output: 
+  pdf_document:
+    number_sections: TRUE
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r global_options, include=FALSE}
+knitr::opts_chunk$set(tidy = TRUE)
+knitr::opts_chunk$set(fig.pos = 'H')
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+library(rmarkdown)
+library(knitr)
+library(kableExtra)
+library(dplyr)
+```
+
+```{r, echo=FALSE, message=FALSE}
+library(pROC)
+library(rpart)
+library(rpart.plot)
+
+path_input_data <- Sys.getenv("path_input_data")
+dat <- read.csv(file.path(path_input_data, "SMART Daily weights 7.csv"))
+
+# -----------------------------------------------------------------------------
+# Beginning with the original dataset, select subset of rows belonging to those
+# individuals who were assigned to the APP ONLY condition at first-stage
+# randomization and construct new columns
+# -----------------------------------------------------------------------------
+
+colnames(dat)[1] <- "id"
+
+dat <- dat %>% 
+  rename(weight_1 = weight.1, weight_2 = weight.2, weight_3 = weight.3,
+         weight_4 = weight.4, weight_5 = weight.5, weight_6 = weight.6, 
+         weight_7 = weight.7) %>%
+  # Construct three indicator variables
+  # outcome1: =1 if individual was rerandomized, 0 if not rerandomized
+  # outcome2: =1 if individual lost 5% or more of their baseline weight by month 3
+  # outcome3: =1 if individual lost an average of 2 pounds or more per week by month 3
+  mutate(outcome1 = rerand, 
+         outcome2 = if_else((weight_bl_lbs - weight_3mo_lbs)/weight_bl_lbs >= 0.05, 1, 0)) %>%
+  # Percent weight loss from baseline to day t, t=1,...,7
+  mutate(delta_1 = 100*(weight_bl_lbs - weight_1)/weight_bl_lbs,
+         delta_2 = 100*(weight_bl_lbs - weight_2)/weight_bl_lbs,
+         delta_3 = 100*(weight_bl_lbs - weight_3)/weight_bl_lbs,
+         delta_4 = 100*(weight_bl_lbs - weight_4)/weight_bl_lbs,
+         delta_5 = 100*(weight_bl_lbs - weight_5)/weight_bl_lbs,
+         delta_6 = 100*(weight_bl_lbs - weight_6)/weight_bl_lbs,
+         delta_7 = 100*(weight_bl_lbs - weight_7)/weight_bl_lbs) %>%
+  # An indicator variable for whether weight at day t is missing
+  mutate(miss_day1 = 1*(is.na(weight_1)),
+         miss_day2 = 1*(is.na(weight_2)),
+         miss_day3 = 1*(is.na(weight_3)),
+         miss_day4 = 1*(is.na(weight_4)),
+         miss_day5 = 1*(is.na(weight_5)),
+         miss_day6 = 1*(is.na(weight_6)),
+         miss_day7 = 1*(is.na(weight_7))) %>%
+  # Only retain individuals in the APP Only condition since we wish to address the question:
+  # Is it Possible to Identify Non-Responders to App Alone During the First Week? 
+  filter(condition_orig==0) %>%
+  mutate(plotid = 1:nrow(.)) %>%
+  select(plotid, everything()) %>%
+  # Exclude individual due to high probability of incorrectly recorded data on day 6
+  filter(plotid!=94)
+
+# -----------------------------------------------------------------------------
+# Calculate summary statistics for particpants who were assigned to the
+# APP ONLY condition during first-stage randomization
+# -----------------------------------------------------------------------------
+
+# How many participants are in the data?
+#nrow(dat)
+
+# How many percent of individuals did not provide weights at day t?
+missdf <- dat %>% 
+  summarise(percent_day1 = 100*sum(miss_day1)/nrow(.), 
+            percent_day2 = 100*sum(miss_day2)/nrow(.), 
+            percent_day3 = 100*sum(miss_day3)/nrow(.), 
+            percent_day4 = 100*sum(miss_day4)/nrow(.), 
+            percent_day5 = 100*sum(miss_day5)/nrow(.), 
+            percent_day6 = 100*sum(miss_day6)/nrow(.), 
+            percent_day7 = 100*sum(miss_day7)/nrow(.)) %>%
+  round(., digits=3)
+
+#print(missdf)
+
+# -----------------------------------------------------------------------------
+# Construct training data and test data
+# -----------------------------------------------------------------------------
+
+set.seed(342386787)
+usedat <- dat %>% 
+  # Stratify by gender, outcome1, and outcome2
+  group_by(gender, outcome1, outcome2) %>%  
+  mutate(tot_in_group = n(), 
+         num_leave_out_in_group = ceiling(0.20*tot_in_group), 
+         num_retain_in_group = n()-ceiling(0.20*tot_in_group)) %>%
+  # For each possible set of values of (gender, outcome1, outcome2)
+  # Assign 80% to training data and 20% to test data
+  mutate(leave_out = c(rep(1, num_leave_out_in_group[1]), rep(0, num_retain_in_group[1]))) %>%
+  arrange(desc(leave_out))
+
+# Finally, take subset of individuals who will be used as training data and test data
+dat_train <- usedat %>% filter(leave_out==0) %>% ungroup(.)
+dat_test <- usedat %>% filter(leave_out==1) %>% ungroup(.)
+  
+# -----------------------------------------------------------------------------
+# Calculate summary statistics on training data and test data
+# ----------------------------------------------------------------------------- 
+
+# What proportion of individuals have a value of 1 in the variables
+# gender, outcome1, outcome2?
+prop_train <- dat_train %>% 
+  summarise(propgender = mean(gender==1),
+            prop1 = mean(outcome1), 
+            prop2 = mean(outcome2)) %>%
+  unlist(.)
+
+prop_test <- dat_test %>% 
+  summarise(propgender = mean(gender==1),
+            prop1 = mean(outcome1), 
+            prop2 = mean(outcome2)) %>%
+  unlist(.)
+
+# Observe that proportion of individuals having a value of 1 in 
+# propgender, prop1, prop2 in the training data and test data are quite close
+#print(prop_train)
+#print(prop_test)
+
+# -----------------------------------------------------------------------------
+# Get decision rule using CART: use training data
+# -----------------------------------------------------------------------------
+use_seed <- 342402787
+set.seed(use_seed)
+
+subset_use_dat <- dat_train %>% select(id, outcome1, delta_1, delta_4, delta_7)
+subset_use_dat <- subset_use_dat[complete.cases(subset_use_dat),]
+fit <- rpart(outcome1 ~ delta_1 + delta_4 + delta_7, data = subset_use_dat, method = "class")
+#plot(fit)
+#text(fit)
+#printcp(fit)
+#plotcp(fit)
+
+fit_pruned <- prune(fit, cp = fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"])
+#plot(fit_pruned)
+#text(fit_pruned)
+#printcp(fit_pruned)
+
+# Display decision rule obtained from training data
+rpart.plot(fit_pruned)
+```
+
+```{r, echo = FALSE}
+subset_use_dat <- subset_use_dat %>%
+  mutate(green_node1 = 1*((delta_1 >= -0.19) & (delta_4 >= -0.22) & (delta_7 >= -0.022 & delta_7 < 1.5)),
+         green_node2 = 1*((delta_4 < -0.22) & (delta_7 >= -0.022)),
+         green_node3 = 1*(delta_7 < -0.022)) %>%
+  mutate(green_node = 1*(green_node1 + green_node2 + green_node3 > 0)) %>%
+  mutate(Y_predicted_fullcartrule = case_when(
+    (delta_7 < 0) ~ 1,
+    (delta_4 < -0.22) & (delta_7 >= 0) ~ 1,
+    (delta_1 >= -0.19) & (delta_4 >= -0.22) & (delta_7 > 0 & delta_7 <= 1.5)  ~ 1,
+    TRUE ~ 0
+  )) %>%
+  mutate(Y_predicted_simplerule = case_when(
+    (delta_7 < 0) ~ 1,
+    (delta_4 < -0.22) ~ 1,
+    (delta_1 >= -0.19) & (delta_7 <= 1.5)  ~ 1,
+    TRUE ~ 0
+  ))
+```
+
+
+```{r, echo = FALSE}
+subset_use_dat %>%
+  summarise(prop_node1 = sum(green_node1)/nrow(.),
+            prop_mode2 = sum(green_node2)/nrow(.),
+            prop_node3 = sum(green_node3)/nrow(.))
+
+```
+
+
+
+```{r, echo = FALSE}
+table(subset_use_dat$green_node, subset_use_dat$Y_predicted_fullcartrule)
+```
+
+
+```{r, echo = FALSE}
+table(subset_use_dat$green_node, subset_use_dat$Y_predicted_simplerule)
+```
