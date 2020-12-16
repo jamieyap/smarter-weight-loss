@@ -29,24 +29,25 @@ library(dplyr)
 # How many individuals did we consider and what percentage had missing data?
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
+source("month-six-00.R")
 source("month-six-01.R")
 
 missdf %>%
-  select(tot_rows, percent_day1, percent_day4, percent_day7, miss_analysis, miss_analysis_outcome2, miss_analysis_outcome3) %>%
+  select(tot_rows, percent_day1, percent_day4, percent_day7, miss_analysis) %>%
   round(., digits = 3) %>%
-  kable(booktabs = TRUE, align = rep('c',10),
-        col.names = c("Total No. Individuals","Day 1","Day 4","Day 7","Day 1, 4, or 7", "BL, Day 1, 4, or 7, or 3-mo", "BL, Day 1, 4, or 7, or 6-mo"),
+  kable(booktabs = TRUE, align = rep('c',8),
+        col.names = c("Total No. Individuals","Day 1","Day 4","Day 7","Day 1, 4, or 7"),
         row.names = FALSE,
         escape = FALSE,
         caption = "First Column: Total number of individuals in APP ONLY arm (excluding one individual with data issue); Remaining Columns: Percent with no weights") %>%
-  kable_styling(full_width = FALSE, latex_options = c("HOLD_position","scale_down"))
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 
 # Can we identify APP ONLY arm non-responders during the first week of treatment? (`non-response' as defined in previous SMART study at weeks 2, 4, 8)
 
-
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
+source("month-six-00.R")
 source("month-six-01.R")
 source("month-six-02.R")
 
@@ -65,6 +66,7 @@ tbl_cart_only %>%
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
 use_miss_rule <- "miss_rule1"
+source("month-six-00.R")
 source("month-six-01.R")
 source("month-six-02.R")
 source("month-six-03.R")
@@ -84,6 +86,7 @@ tbl_overall %>%
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
 use_miss_rule <- "miss_rule2"
+source("month-six-00.R")
 source("month-six-01.R")
 source("month-six-02.R")
 source("month-six-03.R")
@@ -104,6 +107,7 @@ tbl_overall %>%
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
 use_miss_rule <- "miss_rule3"
+source("month-six-00.R")
 source("month-six-01.R")
 source("month-six-02.R")
 source("month-six-03.R")
@@ -123,6 +127,7 @@ tbl_overall %>%
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
 use_miss_rule <- "miss_rule4"
+source("month-six-00.R")
 source("month-six-01.R")
 source("month-six-02.R")
 source("month-six-03.R")
@@ -145,6 +150,7 @@ tbl_overall %>%
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
 use_miss_rule <- "miss_rule4"
+source("month-six-00.R")
 source("month-six-01.R")
 source("month-six-02.R")
 source("month-six-03.R")
