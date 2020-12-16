@@ -11,7 +11,7 @@ dat_train_complete_case <- dat_train_complete_case %>%
   mutate(Y_predicted = case_when(
     (delta_7 < 0) ~ 1,
     (delta_4 < -0.22) ~ 1,
-    (delta_1 >= -0.19) & (delta_7 <= 1.5)  ~ 1,
+    (delta_1 >= -0.19) & (delta_7 >= 0 & delta_7 < 1.5)  ~ 1,
     TRUE ~ 0
   ))
 
@@ -30,7 +30,7 @@ dat_test_complete_case <- dat_test_complete_case %>%
   mutate(Y_predicted = case_when(
     (delta_7 < 0) ~ 1,
     (delta_4 < -0.22) ~ 1,
-    (delta_1 >= -0.19) & (delta_7 <= 1.5)  ~ 1,
+    (delta_1 >= -0.19) & (delta_7 >= 0 & delta_7 < 1.5)  ~ 1,
     TRUE ~ 0
   ))
 

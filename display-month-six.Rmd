@@ -155,13 +155,17 @@ source("month-six-01.R")
 source("month-six-02.R")
 source("month-six-03.R")
 
+n_tot <- nrow(dat_reg)
+n_participants2 <- nrow(na.omit(dat_reg2))
+n_participants3 <- nrow(na.omit(dat_reg3))
+
 tbl_mod_outcome2 %>%
   round(., digits = 3) %>%
   kable(booktabs = TRUE, align = rep('c',4),
         col.names = c("Estimate", "Std. Error", "z value", "Pr(>|z|)"),
         row.names = TRUE,
         escape = FALSE,
-        caption = "Weight loss success at Month 3: Estimates of Parameters in a Logistic Regression Model") %>%
+        caption = paste("Weight loss success at Month 3: Estimates of Parameters in a Logistic Regression Model"," (N=",n_participants2," participants were used to estimate logistic regression model; ", n_tot-n_participants2," participants had missing weight at 3-mo)", sep="")) %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 
 tbl_mod_outcome3 %>%
@@ -170,7 +174,7 @@ tbl_mod_outcome3 %>%
         col.names = c("Estimate", "Std. Error", "z value", "Pr(>|z|)"),
         row.names = TRUE,
         escape = FALSE,
-        caption = "Weight loss success at Month 6: Estimates of Parameters in a Logistic Regression Model") %>%
+        caption = paste("Weight loss success at Month 6: Estimates of Parameters in a Logistic Regression Model"," (N=",n_participants3," participants were used to estimate logistic regression model; ", n_tot-n_participants3," participants had missing weight at 6-mo)", sep="")) %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 

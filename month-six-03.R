@@ -82,14 +82,14 @@ row.names(tbl_overall) <- c("Training","Validation")
 # -----------------------------------------------------------------------------
 
 dat_reg <- rbind(dat_overall_train, dat_overall_test)
+dat_reg2 <- dat_reg[,c("Y_predicted","outcome2")]
+dat_reg3 <- dat_reg[,c("Y_predicted","outcome3")]
 
-mod_outcome2 <- glm(outcome2 ~ Y_predicted, family = "binomial", data = dat_reg)
+mod_outcome2 <- glm(outcome2 ~ Y_predicted, family = "binomial", data = dat_reg2)
 tbl_mod_outcome2 <- summary(mod_outcome2)$coefficients
 row.names(tbl_mod_outcome2) <- c("beta0","beta1")
 
-
-
-mod_outcome3 <- glm(outcome3 ~ Y_predicted, family = "binomial", data = dat_reg)
+mod_outcome3 <- glm(outcome3 ~ Y_predicted, family = "binomial", data = dat_reg3)
 tbl_mod_outcome3 <- summary(mod_outcome3)$coefficients
 row.names(tbl_mod_outcome3) <- c("beta0","beta1")
 

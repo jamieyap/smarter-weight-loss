@@ -32,10 +32,16 @@ library(dplyr)
 library(pROC)
 library(rpart)
 library(rpart.plot)
+```
 
+
+```{r, echo=FALSE, message=FALSE}
 path_input_data <- Sys.getenv("path_input_data")
 dat <- read.csv(file.path(path_input_data, "SMART Daily weights 7.csv"))
+```
 
+
+```{r, echo=FALSE, message=FALSE}
 # -----------------------------------------------------------------------------
 # Beginning with the original dataset, select subset of rows belonging to those
 # individuals who were assigned to the APP ONLY condition at first-stage
@@ -165,26 +171,32 @@ fit_pruned <- prune(fit, cp = fit$cptable[which.min(fit$cptable[,"xerror"]),"CP"
 rpart.plot(fit_pruned)
 ```
 
+
 ```{r, echo = FALSE}
 subset_use_dat <- subset_use_dat %>%
   mutate(green_node1 = 1*((delta_1 >= -0.19) & (delta_4 >= -0.22) & (delta_7 >= -0.022 & delta_7 < 1.5)),
          green_node2 = 1*((delta_4 < -0.22) & (delta_7 >= -0.022)),
          green_node3 = 1*(delta_7 < -0.022)) %>%
   mutate(green_node = 1*(green_node1 + green_node2 + green_node3 > 0)) %>%
+  mutate(Y_predicted = case_when(
+    green_node1==1 ~ 1,
+    green_node2==1 ~ 1,
+    green_node3==1 ~ 1,
+    TRUE ~ 0
+  )) %>%
   mutate(Y_predicted_fullcartrule = case_when(
     (delta_7 < 0) ~ 1,
     (delta_4 < -0.22) & (delta_7 >= 0) ~ 1,
-    (delta_1 >= -0.19) & (delta_4 >= -0.22) & (delta_7 > 0 & delta_7 <= 1.5)  ~ 1,
+    (delta_1 >= -0.19) & (delta_4 >= -0.22) & (delta_7 >= 0 & delta_7 < 1.5)  ~ 1,
     TRUE ~ 0
   )) %>%
   mutate(Y_predicted_simplerule = case_when(
     (delta_7 < 0) ~ 1,
     (delta_4 < -0.22) ~ 1,
-    (delta_1 >= -0.19) & (delta_7 <= 1.5)  ~ 1,
+    (delta_1 >= -0.19) & (delta_7 >= 0 & delta_7 < 1.5)  ~ 1,
     TRUE ~ 0
   ))
 ```
-
 
 \newpage
 
@@ -192,7 +204,8 @@ subset_use_dat <- subset_use_dat %>%
 
 ```{r, echo = FALSE}
 subset_use_dat %>%
-  summarise(prop_node1 = sum(green_node1)/nrow(.),
+  summarise(prop_green = sum(green_node)/nrow(.),
+            prop_node1 = sum(green_node1)/nrow(.),
             prop_mode2 = sum(green_node2)/nrow(.),
             prop_node3 = sum(green_node3)/nrow(.))
 
@@ -207,3 +220,10 @@ table(subset_use_dat$green_node, subset_use_dat$Y_predicted_fullcartrule)
 ```{r, echo = FALSE}
 table(subset_use_dat$green_node, subset_use_dat$Y_predicted_simplerule)
 ```
+
+```{r, echo = FALSE}
+table(subset_use_dat$Y_predicted_fullcartrule, subset_use_dat$Y_predicted_simplerule)
+```
+
+
+
