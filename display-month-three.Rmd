@@ -34,7 +34,21 @@ source("month-three.R")
 
 \newpage
 
-# Can we identify App nonresponders during the first week of treatment?
+# How many individuals did we consider and what percentage had missing data?
+```{r, echo = FALSE}
+missdf %>%
+  select(tot_rows, percent_day1, percent_day4, percent_day7, miss_analysis) %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',8),
+        col.names = c("Total No. Individuals","No weight on Day 1","No weight on Day 4","No weight on Day 7","No weight on Day 1, 4, or 7"),
+        row.names = FALSE,
+        escape = FALSE,
+        caption = "First Column: Total number of individuals in APP ONLY arm (excluding one individual with data issue); Remaining Columns: Percent with no weights") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position","scale_down"))
+```
+
+
+# Can we identify App non-responders during the first week of treatment?
 
 ```{r, echo = FALSE}
 tbl_cart_only %>%
@@ -60,7 +74,7 @@ tbl_overall %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 
-# Is response status at week 8 predictive of weight loss at month 3?
+# Is non-response status at week 8 predictive of weight loss at month 3?
 
 ```{r, echo = FALSE}
 tbl_mod %>%

@@ -26,6 +26,8 @@ library(kableExtra)
 library(dplyr)
 ```
 
+# Classification Tree
+
 ```{r, echo=FALSE, message=FALSE}
 library(pROC)
 library(rpart)
@@ -184,6 +186,10 @@ subset_use_dat <- subset_use_dat %>%
 ```
 
 
+\newpage
+
+# Empirical Sanity Check on Implementation of Simplified Classification Rule
+
 ```{r, echo = FALSE}
 subset_use_dat %>%
   summarise(prop_node1 = sum(green_node1)/nrow(.),
@@ -191,7 +197,6 @@ subset_use_dat %>%
             prop_node3 = sum(green_node3)/nrow(.))
 
 ```
-
 
 
 ```{r, echo = FALSE}

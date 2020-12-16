@@ -1,3 +1,6 @@
+# -----------------------------------------------------------------------------
+# Read in packages and data
+# -----------------------------------------------------------------------------
 library(dplyr)
 library(pROC)
 library(rpart)
@@ -54,17 +57,21 @@ dat <- dat %>%
 # -----------------------------------------------------------------------------
 
 # How many participants are in the data?
-nrow(dat)
+#nrow(dat)
 
-# How many percent of individuals did not provide weights at day t?
 missdf <- dat %>% 
-  summarise(percent_day1 = 100*sum(miss_day1)/nrow(.), 
+  summarise(tot_rows = n(),
+            percent_day1 = 100*sum(miss_day1)/nrow(.), 
             percent_day2 = 100*sum(miss_day2)/nrow(.), 
             percent_day3 = 100*sum(miss_day3)/nrow(.), 
             percent_day4 = 100*sum(miss_day4)/nrow(.), 
             percent_day5 = 100*sum(miss_day5)/nrow(.), 
             percent_day6 = 100*sum(miss_day6)/nrow(.), 
-            percent_day7 = 100*sum(miss_day7)/nrow(.)) %>%
+            percent_day7 = 100*sum(miss_day7)/nrow(.),
+            percent1 = 100*sum(is.na(outcome1))/nrow(.),
+            percent2 = 100*sum(is.na(outcome2))/nrow(.),
+            miss_analysis = 100*sum(is.na(outcome1) | miss_day1 | miss_day4 | miss_day7)/nrow(.)
+  ) %>%
   round(., digits=3)
 
 #print(missdf)

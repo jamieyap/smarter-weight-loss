@@ -26,29 +26,30 @@ library(kableExtra)
 library(dplyr)
 ```
 
-```{r, echo = FALSE, message = FALSE, warning = FALSE, fig.height=4, fig.width=4}
-source("month-six.R")
-```
-
 # How many individuals did we consider and what percentage had missing data?
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+source("month-six-01.R")
+
 missdf %>%
-  select(tot_rows, percent_day1, percent_day4, percent_day7, miss_analysis) %>%
+  select(tot_rows, percent_day1, percent_day4, percent_day7, miss_analysis, miss_analysis_outcome2, miss_analysis_outcome3) %>%
   round(., digits = 3) %>%
-  kable(booktabs = TRUE, align = rep('c',8),
-        col.names = c("Total No. Individuals","No weight on Day 1","No weight on Day 4","No weight on Day 7","No weight on Day 1, 4, or 7"),
+  kable(booktabs = TRUE, align = rep('c',10),
+        col.names = c("Total No. Individuals","Day 1","Day 4","Day 7","Day 1, 4, or 7", "BL, Day 1, 4, or 7, or 3-mo", "BL, Day 1, 4, or 7, or 6-mo"),
         row.names = FALSE,
         escape = FALSE,
         caption = "First Column: Total number of individuals in APP ONLY arm (excluding one individual with data issue); Remaining Columns: Percent with no weights") %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position","scale_down"))
 ```
 
+# Can we identify APP ONLY arm non-responders during the first week of treatment? (`non-response' as defined in previous SMART study at weeks 2, 4, 8)
 
 
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+source("month-six-01.R")
+source("month-six-02.R")
 
-# Can we identify App nonresponders during the first week of treatment?
-
-```{r, echo = FALSE}
 tbl_cart_only %>%
   select(sensitivity,specificity) %>%
   round(., digits = 3) %>%
@@ -60,7 +61,14 @@ tbl_cart_only %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 
-```{r, echo = FALSE}
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule1"
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+
 tbl_overall %>%
   select(sensitivity,specificity) %>%
   round(., digits = 3) %>%
@@ -68,36 +76,95 @@ tbl_overall %>%
         col.names = c("Sensitivity","Specificity"),
         row.names = TRUE,
         escape = FALSE,
-        caption = "Overall Decision Rule") %>%
+        caption = "Overall Decision Rule, Option 1: Non-responder if `day 1, 4, or 7' is missing") %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 
-# Is predicted response status at week 8 predictive of weight loss at month 3?
 
-```{r, echo = FALSE}
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule2"
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Overall Decision Rule, Option 2: Non-responder if `day 1' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule3"
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Overall Decision Rule, Option 3: Non-responder if `day 4 or 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule4"
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Overall Decision Rule, Option 4: Non-responder if either `day 1 and day 4' or `day 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+# Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 4) predict weight loss success at Month X?
+
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule4"
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+
 tbl_mod_outcome2 %>%
   round(., digits = 3) %>%
   kable(booktabs = TRUE, align = rep('c',4),
         col.names = c("Estimate", "Std. Error", "z value", "Pr(>|z|)"),
         row.names = TRUE,
         escape = FALSE,
-        caption = "Estimates of Parameters in a Logistic Regression Model") %>%
+        caption = "Weight loss success at Month 3: Estimates of Parameters in a Logistic Regression Model") %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
-```
 
-# Is predicted response status at week 8 predictive of weight loss at month 6?
-
-```{r, echo = FALSE}
 tbl_mod_outcome3 %>%
   round(., digits = 3) %>%
   kable(booktabs = TRUE, align = rep('c',4),
         col.names = c("Estimate", "Std. Error", "z value", "Pr(>|z|)"),
         row.names = TRUE,
         escape = FALSE,
-        caption = "Estimates of Parameters in a Logistic Regression Model") %>%
+        caption = "Weight loss success at Month 6: Estimates of Parameters in a Logistic Regression Model") %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
-
-
-
 
