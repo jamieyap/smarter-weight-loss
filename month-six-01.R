@@ -27,3 +27,18 @@ dat_train[["Y"]] <- dat_train[[use_this_outcome]]  # see top of script
 dat_test[["Y"]] <- dat_test[[use_this_outcome]]  # see top of script
 
 
+if(FALSE){
+  dat_train <- dat_train %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+  dat_test <- dat_test %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+}
+
+
+

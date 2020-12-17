@@ -144,12 +144,33 @@ tbl_overall %>%
 ```
 
 
-# Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 4) predict weight loss success at Month X?
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule5"
+source("month-six-00.R")
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Overall Decision Rule, Option 5: Non-responder if at least 2 days (any day) out of the first 7 days is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+# Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 5) predict weight loss success at Month X?
 
 
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
-use_miss_rule <- "miss_rule4"
+use_miss_rule <- "miss_rule5"
 source("month-six-00.R")
 source("month-six-01.R")
 source("month-six-02.R")

@@ -4,7 +4,9 @@
 # -----------------------------------------------------------------------------
 idx_train_complete_case <- complete.cases(dat_train[,c("Y", "delta_1", "delta_4", "delta_7")])
 dat_train_complete_case <- dat_train %>% 
-  select(id, Y, delta_1, delta_4, delta_7, outcome1, outcome2, outcome3, outcome4, outcome5) %>%
+  select(id, Y, delta_1, delta_4, delta_7, 
+         delta_2, delta_3, delta_5, delta_6,
+         outcome1, outcome2, outcome3, outcome4, outcome5) %>%
   filter(idx_train_complete_case)
 
 dat_train_complete_case <- dat_train_complete_case %>% 
@@ -23,7 +25,9 @@ tbl_cart_train <- table(dat_train_complete_case$Y, dat_train_complete_case$Y_pre
 # -----------------------------------------------------------------------------
 idx_test_complete_case <- complete.cases(dat_test[,c("Y", "delta_1", "delta_4", "delta_7")])
 dat_test_complete_case <- dat_test %>% 
-  select(id, Y, delta_1, delta_4, delta_7, outcome1, outcome2, outcome3, outcome4, outcome5) %>%
+  select(id, Y, delta_1, delta_4, delta_7, 
+         delta_2, delta_3, delta_5, delta_6,
+         outcome1, outcome2, outcome3, outcome4, outcome5) %>%
   filter(idx_test_complete_case)
 
 dat_test_complete_case <- dat_test_complete_case %>% 
