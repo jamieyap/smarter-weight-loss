@@ -165,6 +165,41 @@ tbl_overall %>%
 ```
 
 
+# Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 1) predict weight loss success at Month X?
+
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule1"
+source("month-six-00.R")
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+
+n_tot <- nrow(dat_reg)
+n_participants2 <- nrow(na.omit(dat_reg2))
+n_participants3 <- nrow(na.omit(dat_reg3))
+
+tbl_mod_outcome2 %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',4),
+        col.names = c("Estimate", "Std. Error", "z value", "Pr(>|z|)"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = paste("Weight loss success at Month 3: Estimates of Parameters in a Logistic Regression Model"," (N=",n_participants2," participants were used to estimate logistic regression model; ", n_tot-n_participants2," participants had missing weight at 3-mo)", sep="")) %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+
+tbl_mod_outcome3 %>%
+  round(., digits = 3) %>%
+  kable(booktabs = TRUE, align = rep('c',4),
+        col.names = c("Estimate", "Std. Error", "z value", "Pr(>|z|)"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = paste("Weight loss success at Month 6: Estimates of Parameters in a Logistic Regression Model"," (N=",n_participants3," participants were used to estimate logistic regression model; ", n_tot-n_participants3," participants had missing weight at 6-mo)", sep="")) %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
 # Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 5) predict weight loss success at Month X?
 
 
@@ -198,4 +233,8 @@ tbl_mod_outcome3 %>%
         caption = paste("Weight loss success at Month 6: Estimates of Parameters in a Logistic Regression Model"," (N=",n_participants3," participants were used to estimate logistic regression model; ", n_tot-n_participants3," participants had missing weight at 6-mo)", sep="")) %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
+
+
+
+
 
