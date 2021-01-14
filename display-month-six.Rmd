@@ -218,8 +218,8 @@ logodds_failure <- tbl_mod_outcome2[1,1]
 
 prob_success <- expit(logodds_success)
 prob_failure <- expit(logodds_failure)
-odds_success <- prob_success/(1+prob_success)
-odds_failure <- prob_failure/(1+prob_failure)
+odds_success <- prob_success/(1-prob_success)
+odds_failure <- prob_failure/(1-prob_failure)
 OR <- odds_success/odds_failure
 
 OR_3mo <- round(OR, digits=3)
@@ -231,8 +231,8 @@ logodds_failure <- tbl_mod_outcome3[1,1]
 
 prob_success <- expit(logodds_success)
 prob_failure <- expit(logodds_failure)
-odds_success <- prob_success/(1+prob_success)
-odds_failure <- prob_failure/(1+prob_failure)
+odds_success <- prob_success/(1-prob_success)
+odds_failure <- prob_failure/(1-prob_failure)
 OR <- odds_success/odds_failure
 
 OR_6mo <- round(OR, digits=3)
@@ -280,8 +280,8 @@ logodds_failure <- tbl_mod_outcome2[1,1]
 
 prob_success <- expit(logodds_success)
 prob_failure <- expit(logodds_failure)
-odds_success <- prob_success/(1+prob_success)
-odds_failure <- prob_failure/(1+prob_failure)
+odds_success <- prob_success/(1-prob_success)
+odds_failure <- prob_failure/(1-prob_failure)
 OR <- odds_success/odds_failure
 
 OR_3mo <- round(OR, digits=3)
@@ -293,8 +293,8 @@ logodds_failure <- tbl_mod_outcome3[1,1]
 
 prob_success <- expit(logodds_success)
 prob_failure <- expit(logodds_failure)
-odds_success <- prob_success/(1+prob_success)
-odds_failure <- prob_failure/(1+prob_failure)
+odds_success <- prob_success/(1-prob_success)
+odds_failure <- prob_failure/(1-prob_failure)
 OR <- odds_success/odds_failure
 
 OR_6mo <- round(OR, digits=3)
