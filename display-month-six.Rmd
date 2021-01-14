@@ -26,7 +26,13 @@ library(kableExtra)
 library(dplyr)
 ```
 
-# How many individuals did we consider and what percentage had missing data?
+# Simply using a training set and a validation set
+
+```{r, echo = FALSE, message = FALSE}
+myseed <- 342386787
+```
+
+## How many individuals did we consider and what percentage had missing data?
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
 source("month-six-00.R")
@@ -43,7 +49,7 @@ missdf %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 
-# Can we identify APP ONLY arm non-responders during the first week of treatment? (`non-response' as defined in previous SMART study at weeks 2, 4, 8)
+## Can we identify APP ONLY arm non-responders during the first week of treatment? (`non-response' as defined in previous SMART study at weeks 2, 4, 8)
 
 ```{r, echo = FALSE, message = FALSE}
 use_this_outcome <- "outcome1"
@@ -165,7 +171,7 @@ tbl_overall %>%
 ```
 
 
-# Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 1) predict weight loss success at Month X?
+## Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 1) predict weight loss success at Month X?
 
 
 ```{r, echo = FALSE, message = FALSE}
@@ -199,8 +205,34 @@ tbl_mod_outcome3 %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 
+```{r, echo = FALSE, message = FALSE}
+expit <- function(x){
+  exp(x)/(1+exp(x))
+}
+```
 
-# Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 5) predict weight loss success at Month X?
+
+```{r, echo = FALSE, message = FALSE}
+logodds_success <- tbl_mod_outcome2[1,1] + tbl_mod_outcome2[2,1]
+logodds_failure <- tbl_mod_outcome2[1,1]
+odds_success <- expit(logodds_success)
+odds_failure <- expit(logodds_failure)
+OR <- odds_success/odds_failure
+OR_3mo <- round(OR, digits=3)
+```
+
+```{r, echo = FALSE, message = FALSE}
+logodds_success <- tbl_mod_outcome3[1,1] + tbl_mod_outcome3[2,1]
+logodds_failure <- tbl_mod_outcome3[1,1]
+odds_success <- expit(logodds_success)
+odds_failure <- expit(logodds_failure)
+OR <- odds_success/odds_failure
+OR_6mo <- round(OR, digits=3)
+```
+
+Odds ratio with respect to these two models is `r OR_3mo` and `r OR_6mo`, respectively.
+
+## Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 5) predict weight loss success at Month X?
 
 
 ```{r, echo = FALSE, message = FALSE}
@@ -234,7 +266,296 @@ tbl_mod_outcome3 %>%
   kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
 ```
 
+```{r, echo = FALSE, message = FALSE}
+logodds_success <- tbl_mod_outcome2[1,1] + tbl_mod_outcome2[2,1]
+logodds_failure <- tbl_mod_outcome2[1,1]
+odds_success <- expit(logodds_success)
+odds_failure <- expit(logodds_failure)
+OR <- odds_success/odds_failure
+OR_3mo <- round(OR, digits=3)
+```
 
+```{r, echo = FALSE, message = FALSE}
+logodds_success <- tbl_mod_outcome3[1,1] + tbl_mod_outcome3[2,1]
+logodds_failure <- tbl_mod_outcome3[1,1]
+odds_success <- expit(logodds_success)
+odds_failure <- expit(logodds_failure)
+OR <- odds_success/odds_failure
+OR_6mo <- round(OR, digits=3)
+```
+
+Odds ratio with respect to these two models is `r OR_3mo` and `r OR_6mo`, respectively.
+
+# Use five-fold cross validation
+
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule1"
+source("month-six-00.R")
+```
+
+```{r, echo = FALSE, message = FALSE}
+myseed <- 8923412
+set.seed(myseed)
+
+cvgroups <- rmultinom(n=nrow(dat), size=1, prob = c(.2, .2, .2, .2, .2))
+cvgroups <- t(cvgroups)
+cvgroups <- data.frame(cvgroups)
+colnames(cvgroups) <- c("cv1","cv2","cv3","cv4","cv5")
+
+# shuffle data before assigning to cv group
+shuffleddat <- dat[sample.int(nrow(dat)),]
+usedat <- cbind(shuffleddat, cvgroups)
+
+n_cv <- usedat %>% summarise(n_cv1 = sum(cv1), n_cv2 = sum(cv2), n_cv3 = sum(cv3), n_cv4 = sum(cv4), n_cv5 = sum(cv5))
+
+n_cv %>%
+  kable(booktabs = TRUE, align = rep('c',5),
+        col.names = c("1st Fold", "2nd Fold", "3rd Fold", "4th Fold", "5th Fold"),
+        row.names = FALSE,
+        escape = FALSE,
+        caption = "Total Number of paticipants in each fold") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+
+```{r, echo = FALSE, message = FALSE}
+# Finally, take subset of individuals who will be used as training data and test data
+dat_train <- usedat %>% filter(cv1!=1) %>% ungroup(.)
+dat_test <- usedat %>% filter(cv1==1) %>% ungroup(.)
+
+# -----------------------------------------------------------------------------
+# What is the outcome that will be used in the classification rule?
+# -----------------------------------------------------------------------------
+dat_train[["Y"]] <- dat_train[[use_this_outcome]]  # see top of script
+dat_test[["Y"]] <- dat_test[[use_this_outcome]]  # see top of script
+
+
+if(FALSE){
+  dat_train <- dat_train %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+  dat_test <- dat_test %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+}
+
+
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_cv1 <- tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3) 
+
+tbl_cv1_formatted <- tbl_cv1 %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "1st training set-validation set split: Overall Decision Rule, Option 1: Non-responder if `day 1, 4, or 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+```{r, echo = FALSE, message = FALSE}
+# Finally, take subset of individuals who will be used as training data and test data
+dat_train <- usedat %>% filter(cv2!=1) %>% ungroup(.)
+dat_test <- usedat %>% filter(cv2==1) %>% ungroup(.)
+
+# -----------------------------------------------------------------------------
+# What is the outcome that will be used in the classification rule?
+# -----------------------------------------------------------------------------
+dat_train[["Y"]] <- dat_train[[use_this_outcome]]  # see top of script
+dat_test[["Y"]] <- dat_test[[use_this_outcome]]  # see top of script
+
+
+if(FALSE){
+  dat_train <- dat_train %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+  dat_test <- dat_test %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+}
+
+
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_cv2 <- tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3)
+
+tbl_cv2_formatted <- tbl_cv2 %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "2nd training set-validation set split: Overall Decision Rule, Option 1: Non-responder if `day 1, 4, or 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+# Finally, take subset of individuals who will be used as training data and test data
+dat_train <- usedat %>% filter(cv3!=1) %>% ungroup(.)
+dat_test <- usedat %>% filter(cv3==1) %>% ungroup(.)
+
+# -----------------------------------------------------------------------------
+# What is the outcome that will be used in the classification rule?
+# -----------------------------------------------------------------------------
+dat_train[["Y"]] <- dat_train[[use_this_outcome]]  # see top of script
+dat_test[["Y"]] <- dat_test[[use_this_outcome]]  # see top of script
+
+
+if(FALSE){
+  dat_train <- dat_train %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+  dat_test <- dat_test %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+}
+
+
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_cv3 <- tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3)
+
+tbl_cv3_formatted <- tbl_cv3 %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "3rd training set-validation set split: Overall Decision Rule, Option 1: Non-responder if `day 1, 4, or 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+# Finally, take subset of individuals who will be used as training data and test data
+dat_train <- usedat %>% filter(cv4!=1) %>% ungroup(.)
+dat_test <- usedat %>% filter(cv4==1) %>% ungroup(.)
+
+# -----------------------------------------------------------------------------
+# What is the outcome that will be used in the classification rule?
+# -----------------------------------------------------------------------------
+dat_train[["Y"]] <- dat_train[[use_this_outcome]]  # see top of script
+dat_test[["Y"]] <- dat_test[[use_this_outcome]]  # see top of script
+
+
+if(FALSE){
+  dat_train <- dat_train %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+  dat_test <- dat_test %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+}
+
+
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_cv4 <- tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3)
+
+tbl_cv4_formatted <- tbl_cv4 %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "4th training set-validation set split: Overall Decision Rule, Option 1: Non-responder if `day 1, 4, or 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+# Finally, take subset of individuals who will be used as training data and test data
+dat_train <- usedat %>% filter(cv5!=1) %>% ungroup(.)
+dat_test <- usedat %>% filter(cv5==1) %>% ungroup(.)
+
+# -----------------------------------------------------------------------------
+# What is the outcome that will be used in the classification rule?
+# -----------------------------------------------------------------------------
+dat_train[["Y"]] <- dat_train[[use_this_outcome]]  # see top of script
+dat_test[["Y"]] <- dat_test[[use_this_outcome]]  # see top of script
+
+
+if(FALSE){
+  dat_train <- dat_train %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+  dat_test <- dat_test %>%
+    mutate(delta_1 = if_else(is.na(delta_1), 0, delta_1),
+           delta_4 = if_else(is.na(delta_4), 0, delta_4),
+           delta_7 = if_else(is.na(delta_7), 0, delta_7))
+  
+}
+
+
+source("month-six-02.R")
+source("month-six-03.R")
+
+tbl_cv5 <- tbl_overall %>%
+  select(sensitivity,specificity) %>%
+  round(., digits = 3)
+
+tbl_cv5_formatted <- tbl_cv5 %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "5th training set-validation set split: Overall Decision Rule, Option 1: Non-responder if `day 1, 4, or 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+tbl_average <- (tbl_cv1 + tbl_cv2 + tbl_cv3 + tbl_cv4 + tbl_cv5)/5
+
+tbl_average_formatted <- tbl_average %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Sensitivity","Specificity"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Average across five splits: Overall Decision Rule, Option 1: Non-responder if `day 1, 4, or 7' is missing") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+tbl_cv1_formatted
+tbl_cv2_formatted
+tbl_cv3_formatted
+tbl_cv4_formatted
+tbl_cv5_formatted
+tbl_average_formatted
+```
 
 
 

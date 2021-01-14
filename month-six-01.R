@@ -1,10 +1,11 @@
 #use_this_outcome <- "outcome1"
+#myseed <- 342386787
 
 # -----------------------------------------------------------------------------
 # Construct training data and test data
 # -----------------------------------------------------------------------------
 
-set.seed(342386787)
+set.seed(myseed)
 usedat <- dat %>% 
   # Stratify by sex, outcome1, outcome2, outcome3
   group_by(sex, outcome1, outcome2, outcome3) %>%  
