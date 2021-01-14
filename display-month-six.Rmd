@@ -215,18 +215,26 @@ expit <- function(x){
 ```{r, echo = FALSE, message = FALSE}
 logodds_success <- tbl_mod_outcome2[1,1] + tbl_mod_outcome2[2,1]
 logodds_failure <- tbl_mod_outcome2[1,1]
-odds_success <- expit(logodds_success)
-odds_failure <- expit(logodds_failure)
+
+prob_success <- expit(logodds_success)
+prob_failure <- expit(logodds_failure)
+odds_success <- prob_success/(1+prob_success)
+odds_failure <- prob_failure/(1+prob_failure)
 OR <- odds_success/odds_failure
+
 OR_3mo <- round(OR, digits=3)
 ```
 
 ```{r, echo = FALSE, message = FALSE}
 logodds_success <- tbl_mod_outcome3[1,1] + tbl_mod_outcome3[2,1]
 logodds_failure <- tbl_mod_outcome3[1,1]
-odds_success <- expit(logodds_success)
-odds_failure <- expit(logodds_failure)
+
+prob_success <- expit(logodds_success)
+prob_failure <- expit(logodds_failure)
+odds_success <- prob_success/(1+prob_success)
+odds_failure <- prob_failure/(1+prob_failure)
 OR <- odds_success/odds_failure
+
 OR_6mo <- round(OR, digits=3)
 ```
 
@@ -269,18 +277,26 @@ tbl_mod_outcome3 %>%
 ```{r, echo = FALSE, message = FALSE}
 logodds_success <- tbl_mod_outcome2[1,1] + tbl_mod_outcome2[2,1]
 logodds_failure <- tbl_mod_outcome2[1,1]
-odds_success <- expit(logodds_success)
-odds_failure <- expit(logodds_failure)
+
+prob_success <- expit(logodds_success)
+prob_failure <- expit(logodds_failure)
+odds_success <- prob_success/(1+prob_success)
+odds_failure <- prob_failure/(1+prob_failure)
 OR <- odds_success/odds_failure
+
 OR_3mo <- round(OR, digits=3)
 ```
 
 ```{r, echo = FALSE, message = FALSE}
 logodds_success <- tbl_mod_outcome3[1,1] + tbl_mod_outcome3[2,1]
 logodds_failure <- tbl_mod_outcome3[1,1]
-odds_success <- expit(logodds_success)
-odds_failure <- expit(logodds_failure)
+
+prob_success <- expit(logodds_success)
+prob_failure <- expit(logodds_failure)
+odds_success <- prob_success/(1+prob_success)
+odds_failure <- prob_failure/(1+prob_failure)
 OR <- odds_success/odds_failure
+
 OR_6mo <- round(OR, digits=3)
 ```
 
