@@ -171,6 +171,79 @@ tbl_overall %>%
 ```
 
 
+## ROC Curve for Option 1
+
+```{r, echo = FALSE, message = FALSE}
+use_this_outcome <- "outcome1"
+use_miss_rule <- "miss_rule1"
+source("month-six-00.R")
+source("month-six-01.R")
+source("month-six-02.R")
+source("month-six-03.R")
+```
+
+```{r, echo = FALSE, message = FALSE}
+# Probability cut-offs based on tree in display-month-three.pdf
+
+dat_overall_train <- dat_overall_train %>%
+  mutate(predicted_prob = case_when(
+    !(delta_7>=-.022) ~ .80,
+    (delta_7>=-.022) & (!(delta_4>=-0.22)) ~ 0.88,
+    (delta_7>=-.022) & (delta_4>=-0.22) & (delta_1 < -0.19) ~ 0.11,
+    (delta_7>=-.022) & (delta_4>=-0.22) & (!(delta_1 < -0.19)) & (delta_7>=1.5) ~ 0.27,
+    (delta_7>=-.022) & (delta_4>=-0.22) & (!(delta_1 < -0.19)) & (!(delta_7>=1.5)) ~ 0.71,
+    is.na(delta_1) | is.na(delta_4) | is.na(delta_7) ~ 1,
+    TRUE ~ NA_real_
+  ))
+
+dat_overall_test <- dat_overall_test %>%
+  mutate(predicted_prob = case_when(
+    !(delta_7>=-.022) ~ .80,
+    (delta_7>=-.022) & (!(delta_4>=-0.22)) ~ 0.88,
+    (delta_7>=-.022) & (delta_4>=-0.22) & (delta_1 < -0.19) ~ 0.11,
+    (delta_7>=-.022) & (delta_4>=-0.22) & (!(delta_1 < -0.19)) & (delta_7>=1.5) ~ 0.27,
+    (delta_7>=-.022) & (delta_4>=-0.22) & (!(delta_1 < -0.19)) & (!(delta_7>=1.5)) ~ 0.71,
+    is.na(delta_1) | is.na(delta_4) | is.na(delta_7) ~ 1,
+    TRUE ~ NA_real_
+  ))
+```
+
+
+```{r, echo = FALSE, message = FALSE}
+library(pROC)
+dat_for_roc <- dat_overall_train
+roc_obj <- roc(dat_for_roc$Y, dat_for_roc$predicted_prob)
+relative_cost_assigned <- 1  
+prevalence_outcome <- mean(dat[["outcome1"]])
+plot.roc(dat_for_roc$Y, dat_for_roc$predicted_prob,
+         print.auc=TRUE,
+         ci=FALSE,
+         legacy.axes=FALSE,
+         asp=NA,
+         thresholds="best",
+         print.thres="best",
+         print.thres.best.method="closest.topleft",
+         print.thres.best.weights=c(relative_cost_assigned, prevalence_outcome),
+         main = "Overall Decision Rule: ROC Curve (Training Data)")
+```
+
+```{r, echo = FALSE, message = FALSE}
+dat_for_roc <- dat_overall_test
+roc_obj <- roc(dat_for_roc$Y, dat_for_roc$predicted_prob)
+relative_cost_assigned <- 1  
+prevalence_outcome <- mean(dat[["outcome1"]])
+plot.roc(dat_for_roc$Y, dat_for_roc$predicted_prob,
+         print.auc=TRUE,
+         ci=FALSE,
+         legacy.axes=FALSE,
+         asp=NA,
+         thresholds="best",
+         print.thres="best",
+         print.thres.best.method="closest.topleft",
+         print.thres.best.weights=c(relative_cost_assigned, prevalence_outcome),
+         main = "Overall Decision Rule: ROC Curve (Validation Data)")
+```
+
 ## Among individuals in the APP ONLY arm, does non-response status based on overall decision rule (Option 1) predict weight loss success at Month X?
 
 
