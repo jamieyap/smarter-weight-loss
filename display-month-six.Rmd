@@ -574,4 +574,57 @@ tbl_average_formatted
 ```
 
 
+# Is the overall decision rule (Option 1), more stringent than the rule for determining non-response utilized during the actual conduct of the SMART?
+
+
+```{r, echo = FALSE, message = FALSE}
+dat <- dat %>% 
+  mutate(Y_predicted = case_when(
+    (delta_7 < 0) ~ 1,
+    (delta_4 < -0.22) ~ 1,
+    (delta_1 >= -0.19) & (delta_7 >= 0 & delta_7 < 1.5)  ~ 1,
+    TRUE ~ 0
+  )) %>%
+  mutate(Y_predicted = replace(Y_predicted, is.na(delta_1)|is.na(delta_4)|is.na(delta_7), 1))
+
+dat <- dat %>% 
+  mutate(indicator_wk2 = if_else(time.classified==2,1,0)) %>%
+  mutate(indicator_wk2 = replace(indicator_wk2, is.na(time.classified), 0))
+```
+
+
+## Using all 184 individuals: Among those who were not re-randomized at Week 2 (i.e., responders at Week 2), how many individuals were classified as non-responders by the overall decision rule (Option 1)?
+```{r, echo = FALSE, message = FALSE}
+tab_wk2 <- as.matrix(table(dat$indicator_wk2, dat$Y_predicted))
+row.names(tab_wk2) <- c("Truth (Week 2): Not Re-randomized", "Truth (Week 2): Re-randomized")
+colnames(tab_wk2) <- c("Predicted: Not Re-randomized", "Predicted: Re-randomized")
+
+tab_wk2 %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Predicted: Not Re-randomized", "Predicted: Re-randomized"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Cross-Tabulation of Truth Aginst Predicted Non-Response") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+## Using all 184 individuals: Among those who were not re-randomized at Week 2, 4, or 8 (i.e., responders at Week 2), how many individuals were classified as non-responders by the overall decision rule (Option 1)?
+```{r, echo = FALSE, message = FALSE}
+tab_wk248 <- as.matrix(table(dat$outcome1, dat$Y_predicted))
+row.names(tab_wk248) <- c("Truth (Week 2, 4, or 8): Not Re-randomized", "Truth (Week 2, 4, or 8): Re-randomized")
+colnames(tab_wk248) <- c("Predicted: Not Re-randomized", "Predicted: Re-randomized")
+
+tab_wk248 %>%
+  kable(booktabs = TRUE, align = rep('c',2),
+        col.names = c("Predicted: Not Re-randomized", "Predicted: Re-randomized"),
+        row.names = TRUE,
+        escape = FALSE,
+        caption = "Cross-Tabulation of Truth Aginst Predicted Non-Response") %>%
+  kable_styling(full_width = FALSE, latex_options = c("HOLD_position"))
+```
+
+
+
+
+
 
